@@ -1,0 +1,63 @@
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RouteType {
+  out_and_back
+  loop
+  point_to_point
+}
+
+/// How the user travels between base and trailhead (saved on trip plans, used for time estimates).
+enum AccessMode {
+  car
+  transit
+  walking
+}
+
+model Trail {
+  id             String    @id
+  name           String
+  lat            Float
+  lng            Float
+  region         String
+  distanceKm     Float     @map("distance_km")
+  elevationGainM Int       @map("elevation_gain_m")
+  maxAltitudeM   Int?      @map("max_altitude_m")
+  routeType      RouteType @map("route_type")
+  physicalScore  Int       @map("physical_score")
+  technicalScore Int       @map("technical_score")
+  /// Curated 1–5: flat / no drop-offs → scrambling / via-ferrata–class (see README).
+  exposureScore  Int       @map("exposure_score")
+  generalRating  Float?    @map("general_rating")
+  wildlifeRating Float?    @map("wildlife_rating")
+  accessWalking  Boolean   @map("access_walking")
+  accessTransit  Boolean   @map("access_transit")
+  accessCar      Boolean   @map("access_car")
+  transitNotes   String?   @map("transit_notes")
+  tripPlans      TripPlan[]
+
+  @@map("trails")
+}
+
+model TripPlan {
+  id               String     @id @default(cuid())
+  title            String
+  baseLocationName String     @map("base_location_name")
+  baseLat          Float      @map("base_lat")
+  baseLng          Float      @map("base_lng")
+  trailId          String     @map("trail_id")
+  trail            Trail      @relation(fields: [trailId], references: [id], onDelete: Cascade)
+  mode             AccessMode
+  notes            String?
+  createdAt        DateTime   @default(now()) @map("created_at")
+
+  @@map("trip_plans")
+}
