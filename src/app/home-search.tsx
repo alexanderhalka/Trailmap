@@ -8,6 +8,7 @@ import { formatTrailAccessModes } from "@/lib/trail-access";
 import { defaultAccessModeForLegs } from "@/lib/travel-defaults";
 import { travelLegsToSearchParams } from "@/lib/travel-legs";
 import type { Trail, TravelLegs } from "@/lib/types";
+import { TrailsMapPanel } from "@/components/trails-map-panel";
 
 export function HomeSearch() {
   const [baseLocation, setBaseLocation] = useState("Banff town centre");
@@ -267,6 +268,14 @@ export function HomeSearch() {
         <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error}
         </p>
+      ) : null}
+
+      {hydrated && !error ? (
+        <TrailsMapPanel
+          trails={trails}
+          base={resolved ? { lat: resolved.lat, lng: resolved.lng } : null}
+          getDetailHref={fixHref}
+        />
       ) : null}
 
       <section className="grid gap-3">

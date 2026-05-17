@@ -8,6 +8,7 @@ Small web app for Banff/Canmore day hikes: filter trails, geocode a base, rough 
 - PostgreSQL, Prisma (`pg` + `@prisma/adapter-pg`)
 - Docker Compose for local Postgres
 - Geocoding via OpenStreetMap Nominatim
+- Home map: Leaflet + OpenStreetMap tiles (trailhead pins + your base)
 
 ## Travel (list vs detail)
 
@@ -19,7 +20,7 @@ Trail detail and saved plans still store **one** leg for the crude time estimate
 
 ## Exposure
 
-Each trail has an exposure score 1–5 in the DB..
+Each trail has an exposure score 1–5 in the DB.
 
 ## Local setup
 
