@@ -15,49 +15,85 @@ enum RouteType {
   point_to_point
 }
 
-/// How the user travels between base and trailhead (saved on trip plans, used for time estimates).
+/// How the user travels between base and trailhead (used for time estimates on trail detail).
 enum AccessMode {
   car
   transit
   walking
 }
 
+enum Visibility {
+  PRIVATE
+  PUBLIC
+}
+
 model Trail {
-  id             String    @id
+  id             String       @id
   name           String
   lat            Float
   lng            Float
   region         String
-  distanceKm     Float     @map("distance_km")
-  elevationGainM Int       @map("elevation_gain_m")
-  maxAltitudeM   Int?      @map("max_altitude_m")
-  routeType      RouteType @map("route_type")
-  physicalScore  Int       @map("physical_score")
-  technicalScore Int       @map("technical_score")
+  distanceKm     Float        @map("distance_km")
+  elevationGainM Int          @map("elevation_gain_m")
+  maxAltitudeM   Int?         @map("max_altitude_m")
+  routeType      RouteType    @map("route_type")
+  physicalScore  Int          @map("physical_score")
+  technicalScore Int          @map("technical_score")
   /// Curated 1–5: flat / no drop-offs → scrambling / via-ferrata–class (see README).
-  exposureScore  Int       @map("exposure_score")
-  generalRating  Float?    @map("general_rating")
-  wildlifeRating Float?    @map("wildlife_rating")
-  accessWalking  Boolean   @map("access_walking")
-  accessTransit  Boolean   @map("access_transit")
-  accessCar      Boolean   @map("access_car")
-  transitNotes   String?   @map("transit_notes")
-  tripPlans      TripPlan[]
+  exposureScore  Int          @map("exposure_score")
+  generalRating  Float?       @map("general_rating")
+  wildlifeRating Float?       @map("wildlife_rating")
+  accessWalking  Boolean      @map("access_walking")
+  accessTransit  Boolean      @map("access_transit")
+  accessCar      Boolean      @map("access_car")
+  transitNotes   String?      @map("transit_notes")
+  savedBy        SavedTrail[]
+  reviews        Review[]
 
   @@map("trails")
 }
 
-model TripPlan {
-  id               String     @id @default(cuid())
-  title            String
-  baseLocationName String     @map("base_location_name")
-  baseLat          Float      @map("base_lat")
-  baseLng          Float      @map("base_lng")
-  trailId          String     @map("trail_id")
-  trail            Trail      @relation(fields: [trailId], references: [id], onDelete: Cascade)
-  mode             AccessMode
-  notes            String?
-  createdAt        DateTime   @default(now()) @map("created_at")
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  username     String       @unique
+  passwordHash String       @map("password_hash")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  savedTrails  SavedTrail[]
+  reviews      Review[]
 
-  @@map("trip_plans")
+  @@map("users")
+}
+
+model SavedTrail {
+  id         String     @id @default(cuid())
+  userId     String     @map("user_id")
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trailId    String     @map("trail_id")
+  trail      Trail      @relation(fields: [trailId], references: [id], onDelete: Cascade)
+  visibility Visibility @default(PRIVATE)
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@unique([userId, trailId])
+  @@map("saved_trails")
+}
+
+model Review {
+  id              String     @id @default(cuid())
+  userId          String     @map("user_id")
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trailId         String     @map("trail_id")
+  trail           Trail      @relation(fields: [trailId], references: [id], onDelete: Cascade)
+  physicalRating  Int        @map("physical_rating")
+  technicalRating Int        @map("technical_rating")
+  exposureRating  Int        @map("exposure_rating")
+  wildlifeRating  Int        @map("wildlife_rating")
+  overallRating   Int        @map("overall_rating")
+  body            String?
+  visibility      Visibility @default(PRIVATE)
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  @@unique([userId, trailId])
+  @@map("reviews")
 }

@@ -171,7 +171,7 @@ export function HomeSearch() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-6 text-zinc-900">
       <header className="space-y-1">
-        <h1 className="text-3xl font-bold text-zinc-950">TrailMap</h1>
+        <h1 className="text-3xl font-bold text-zinc-950">Find trails</h1>
         <p className="text-sm text-zinc-700">
           Banff and Canmore area trails. Set your base, tick how you might reach a trailhead, then
           filter by difficulty and exposure.
@@ -332,7 +332,7 @@ export function HomeSearch() {
         href="/plans"
         className="self-start rounded-md border border-zinc-400 bg-white px-3 py-2 text-sm font-medium text-zinc-900"
       >
-        View saved plans
+        View saved trails
       </Link>
     </main>
   );

@@ -32,15 +32,41 @@ export interface Trail {
   transitNotes?: string;
 }
 
-export interface TripPlan {
+export type Visibility = "PRIVATE" | "PUBLIC";
+
+export interface SavedTrail {
   id: string;
-  title: string;
-  baseLocationName: string;
-  baseLat: number;
-  baseLng: number;
   trailId: string;
-  mode: AccessMode;
-  notes?: string;
+  visibility: Visibility;
   createdAt: string;
-  trail?: { id: string; name: string };
+  trail: {
+    id: string;
+    name: string;
+    distanceKm: number;
+    elevationGainM: number;
+    physicalScore: number;
+    technicalScore: number;
+    exposureScore: number;
+  };
+}
+
+export interface TrailReview {
+  id: string;
+  trailId: string;
+  username: string;
+  physicalRating: number;
+  technicalRating: number;
+  exposureRating: number;
+  wildlifeRating: number;
+  overallRating: number;
+  body?: string;
+  visibility: Visibility;
+  createdAt: string;
+  updatedAt: string;
+  isOwner: boolean;
+}
+
+export interface TrailReviewsPayload {
+  publicReviews: TrailReview[];
+  myReview: TrailReview | null;
 }

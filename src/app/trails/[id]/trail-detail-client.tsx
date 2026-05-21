@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { formatRouteType } from "@/lib/route-label";
 import { formatTrailAccessModes } from "@/lib/trail-access";
+import { TrailReviewsSection } from "@/components/trail-reviews-section";
 import { estimateTripHours } from "@/lib/trip-estimate";
 import type { AccessMode, Trail } from "@/lib/types";
 
@@ -15,6 +17,9 @@ type Props = {
   mode: AccessMode;
   /** True when URL had no valid baseLat/baseLng — estimates use a default Banff pin. */
   usingDefaultBase: boolean;
+  isLoggedIn: boolean;
+  isSaved: boolean;
+  savedRowId: string | null;
 };
 
 export function TrailDetailClient({
@@ -24,30 +29,86 @@ export function TrailDetailClient({
   baseLng,
   mode,
   usingDefaultBase,
+  isLoggedIn,
+  isSaved: initialIsSaved,
+  savedRowId: initialSavedRowId,
 }: Props) {
+  const router = useRouter();
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [savedRowId, setSavedRowId] = useState(initialSavedRowId);
   const [status, setStatus] = useState<string>("");
+  const [busy, setBusy] = useState(false);
 
   const estimate = useMemo(
     () => estimateTripHours(baseLat, baseLng, trail, mode),
     [baseLat, baseLng, mode, trail],
   );
 
-  async function savePlan() {
-    setStatus("Saving...");
-    const response = await fetch("/api/trip-plans", {
+  async function toggleSaved() {
+    if (!isLoggedIn) {
+      setStatus("Sign in to save trails.");
+      return;
+    }
+
+    setBusy(true);
+    setStatus("");
+
+    if (isSaved) {
+      if (!savedRowId) {
+        setIsSaved(false);
+        setBusy(false);
+        return;
+      }
+
+      const deleteResponse = await fetch(`/api/saved-trails/${savedRowId}`, {
+        method: "DELETE",
+      });
+      if (!deleteResponse.ok && deleteResponse.status !== 204) {
+        setStatus("Could not remove from saved trails.");
+        setBusy(false);
+        return;
+      }
+
+      setIsSaved(false);
+      setSavedRowId(null);
+      setStatus("Removed from saved trails.");
+      setBusy(false);
+      router.refresh();
+      return;
+    }
+
+    const response = await fetch("/api/saved-trails", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: `${trail.name} day hike`,
-        baseLocationName,
-        baseLat,
-        baseLng,
-        trailId: trail.id,
-        mode,
-      }),
+      body: JSON.stringify({ trailId: trail.id }),
     });
 
-    setStatus(response.ok ? "Saved. View it in Saved Plans." : "Save failed.");
+    if (response.status === 401) {
+      setStatus("Sign in to save trails.");
+      setBusy(false);
+      return;
+    }
+
+    if (response.status === 409) {
+      setIsSaved(true);
+      setStatus("Already in your saved trails.");
+      setBusy(false);
+      return;
+    }
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setStatus(body?.error ?? "Save failed.");
+      setBusy(false);
+      return;
+    }
+
+    const body = (await response.json()) as { id: string };
+    setIsSaved(true);
+    setSavedRowId(body.id);
+    setStatus("Saved. View it in Saved trails.");
+    setBusy(false);
+    router.refresh();
   }
 
   return (
@@ -65,9 +126,7 @@ export function TrailDetailClient({
 
       <header className="space-y-1">
         <h1 className="text-2xl font-bold text-zinc-950">{trail.name}</h1>
-        <p className="text-sm font-medium text-zinc-800">
-          {formatTrailAccessModes(trail)}
-        </p>
+        <p className="text-sm font-medium text-zinc-800">{formatTrailAccessModes(trail)}</p>
         <p className="text-sm text-zinc-800">
           {trail.distanceKm} km · {trail.elevationGainM} m gain · {formatRouteType(trail.routeType)}
         </p>
@@ -94,21 +153,37 @@ export function TrailDetailClient({
         <p className="mt-1 text-sm text-zinc-800">
           Go {estimate.goHours}h • Hike {estimate.hikeHours}h • Return {estimate.returnHours}h
         </p>
-        <p className="mt-1 text-base font-semibold text-zinc-950">Total day: {estimate.totalHours} hours</p>
+        <p className="mt-1 text-base font-semibold text-zinc-950">
+          Total day: {estimate.totalHours} hours
+        </p>
+        <p className="mt-2 text-xs text-zinc-600">
+          Rough estimate from your current base — not stored when you save this trail.
+        </p>
       </section>
 
-      <button
-        type="button"
-        onClick={savePlan}
-        className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm text-white"
-      >
-        Save trip plan
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => void toggleSaved()}
+          disabled={busy}
+          className="w-fit rounded-md bg-zinc-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+        >
+          {busy ? "Please wait…" : isSaved ? "Saved — remove" : "Save trail"}
+        </button>
+        {!isLoggedIn ? (
+          <Link href="/login" className="text-sm font-medium text-zinc-800 underline">
+            Sign in to save
+          </Link>
+        ) : null}
+        {isSaved ? (
+          <Link href="/plans" className="text-sm font-medium text-zinc-800 underline">
+            Open saved trails
+          </Link>
+        ) : null}
+      </div>
       {status ? <p className="text-sm font-medium text-zinc-800">{status}</p> : null}
 
-      <Link href="/plans" className="text-sm font-medium text-zinc-800 underline">
-        Open saved plans
-      </Link>
+      <TrailReviewsSection trailId={trail.id} isLoggedIn={isLoggedIn} />
     </main>
   );
 }

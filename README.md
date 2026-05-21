@@ -9,6 +9,7 @@ Small web app for Banff/Canmore day hikes: filter trails, geocode a base, rough 
 - Docker Compose for local Postgres
 - Geocoding via OpenStreetMap Nominatim
 - Home map: Leaflet + OpenStreetMap tiles (trailhead pins + your base)
+- Auth: email + password (NextAuth.js, bcrypt-hashed passwords, JWT sessions)
 
 ## Travel (list vs detail)
 
@@ -24,7 +25,7 @@ Each trail has an exposure score 1–5 in the DB.
 
 ## Local setup
 
-1. Copy env: `cp .env.example .env` (Windows: `copy .env.example .env`), then adjust `DATABASE_URL` if needed.
+1. Copy env: `cp .env.example .env` (Windows: `copy .env.example .env`). Set `DATABASE_URL`, `NEXTAUTH_SECRET` (random string), and `NEXTAUTH_URL` (e.g. `http://localhost:3000`).
 2. `docker compose up -d`
 3. `npm install` then `npm run db:push` and `npm run db:seed`
 4. `npm run dev` → [http://localhost:3000](http://localhost:3000)
@@ -46,4 +47,9 @@ If the schema changed and migrations conflict: `docker compose down -v`, then `u
 - `GET /api/trails/:id`
 - `POST /api/geocode`
 - `POST /api/estimate-trip`
-- `GET` / `POST /api/trip-plans`
+- `GET` / `POST /api/saved-trails` — per-user saved trails (sign in required; one row per trail; optional `visibility`)
+- `PATCH` / `DELETE /api/saved-trails/:id` — update visibility (private/public) or remove
+- `GET` / `PUT /api/trails/:id/reviews` — list public reviews + your review; create/update ratings (1–5) and notes
+- `DELETE /api/reviews/:id` — delete your review
+- `POST /api/auth/register` — create account (`email`, `username`, `password`)
+- NextAuth routes under `/api/auth/*` (sign in, sign out, session)
