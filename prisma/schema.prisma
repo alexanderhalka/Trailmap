@@ -47,6 +47,9 @@ model Trail {
   accessTransit  Boolean      @map("access_transit")
   accessCar      Boolean      @map("access_car")
   transitNotes   String?      @map("transit_notes")
+  /// GeoJSON LineString from OpenStreetMap (cached at seed time).
+  routeGeoJson   Json?        @map("route_geojson")
+  osmRelationId  String?      @map("osm_relation_id")
   savedBy        SavedTrail[]
   reviews        Review[]
 

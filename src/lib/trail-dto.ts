@@ -1,7 +1,10 @@
 import type { Trail as TrailRecord } from "@/generated/prisma/client";
+import { parseRouteGeoJson } from "@/lib/geojson";
 import type { AccessMode, RouteType, Trail } from "@/lib/types";
 
 export function trailToDto(row: TrailRecord): Trail {
+  const route = parseRouteGeoJson(row.routeGeoJson ?? undefined);
+
   return {
     id: row.id,
     name: row.name,
@@ -21,6 +24,7 @@ export function trailToDto(row: TrailRecord): Trail {
     accessTransit: row.accessTransit,
     accessCar: row.accessCar,
     transitNotes: row.transitNotes ?? undefined,
+    route,
   };
 }
 

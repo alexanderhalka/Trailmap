@@ -21,6 +21,7 @@ body {
 
 /* Clickable controls show pointer on hover */
 button:not(:disabled),
+[role="button"],
 a[href],
 label:has(input[type="checkbox"], input[type="radio"]),
 input[type="range"] {

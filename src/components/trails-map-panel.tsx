@@ -23,6 +23,10 @@ type TrailsMapPanelProps = {
   trails: Trail[];
   base: MapPoint | null;
   getDetailHref: (trailId: string) => string;
+  selectedTrailId?: string | null;
+  onSelectTrail?: (trailId: string | null) => void;
+  tall?: boolean;
+  initialSelectedTrailId?: string | null;
 };
 
 export function TrailsMapPanel(props: TrailsMapPanelProps) {

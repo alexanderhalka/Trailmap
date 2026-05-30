@@ -26,6 +26,7 @@ export function HomeSearch() {
   const [maxTechnical, setMaxTechnical] = useState(5);
   const [maxExposure, setMaxExposure] = useState(5);
   const [trails, setTrails] = useState<Trail[]>([]);
+  const [selectedTrailId, setSelectedTrailId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -67,6 +68,7 @@ export function HomeSearch() {
         const data = (await response.json()) as Trail[];
         if (controller.signal.aborted) return;
         setTrails(data);
+        setSelectedTrailId(null);
       } catch (err) {
         if (controller.signal.aborted) return;
         const isAbort =
@@ -275,6 +277,8 @@ export function HomeSearch() {
           trails={trails}
           base={resolved ? { lat: resolved.lat, lng: resolved.lng } : null}
           getDetailHref={fixHref}
+          selectedTrailId={selectedTrailId}
+          onSelectTrail={setSelectedTrailId}
         />
       ) : null}
 
@@ -285,7 +289,20 @@ export function HomeSearch() {
           trails.map((trail) => (
             <article
               key={trail.id}
-              className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm text-zinc-900"
+              role="button"
+              tabIndex={0}
+              onClick={() => setSelectedTrailId(trail.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelectedTrailId(trail.id);
+                }
+              }}
+              className={`rounded-xl border bg-white p-4 shadow-sm text-zinc-900 cursor-pointer transition-colors ${
+                selectedTrailId === trail.id
+                  ? "border-emerald-500 ring-2 ring-emerald-200"
+                  : "border-zinc-200 hover:border-zinc-300"
+              }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -295,7 +312,11 @@ export function HomeSearch() {
                   </p>
                   <p className="text-sm font-medium text-zinc-900">{formatTrailAccessModes(trail)}</p>
                 </div>
-                <Link href={fixHref(trail.id)} className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white">
+                <Link
+                  href={fixHref(trail.id)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="rounded-md bg-zinc-900 px-3 py-2 text-sm text-white"
+                >
                   View details
                 </Link>
               </div>

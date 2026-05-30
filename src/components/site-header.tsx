@@ -18,9 +18,12 @@ export async function SiteHeader() {
           </Link>
           {session?.user ? (
             <>
-              <span className="text-zinc-600">
+              <Link
+                href={`/users/${encodeURIComponent(session.user.username)}`}
+                className="text-zinc-600 hover:text-zinc-950"
+              >
                 Hi, <span className="text-zinc-900">{session.user.username}</span>
-              </span>
+              </Link>
               <SignOutButton />
             </>
           ) : (

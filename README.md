@@ -8,7 +8,7 @@ Small web app for Banff/Canmore day hikes: filter trails, geocode a base, rough 
 - PostgreSQL, Prisma (`pg` + `@prisma/adapter-pg`)
 - Docker Compose for local Postgres
 - Geocoding via OpenStreetMap Nominatim
-- Home map: Leaflet + OpenStreetMap tiles (trailhead pins + your base)
+- Home map: Leaflet + OpenStreetMap tiles; trail routes from cached OSM geometry (click trailhead to highlight)
 - Auth: email + password (NextAuth.js, bcrypt-hashed passwords, JWT sessions)
 
 ## Travel (list vs detail)
@@ -27,7 +27,7 @@ Each trail has an exposure score 1–5 in the DB.
 
 1. Copy env: `cp .env.example .env` (Windows: `copy .env.example .env`). Set `DATABASE_URL`, `NEXTAUTH_SECRET` (random string), and `NEXTAUTH_URL` (e.g. `http://localhost:3000`).
 2. `docker compose up -d`
-3. `npm install` then `npm run db:push` and `npm run db:seed`
+3. `npm install` then `npm run db:push`, `npm run trails:fetch-routes`, and `npm run db:seed`
 4. `npm run dev` → [http://localhost:3000](http://localhost:3000)
 
 If the schema changed and migrations conflict: `docker compose down -v`, then `up -d`, then `db:push` and `db:seed` again.
@@ -39,6 +39,7 @@ If the schema changed and migrations conflict: `docker compose down -v`, then `u
 | `npm run db:push` | Apply `schema.prisma` to the database |
 | `npm run db:migrate` | Create / apply migrations |
 | `npm run db:seed` | Upsert trail rows from `src/lib/seed-trails.ts` |
+| `npm run trails:fetch-routes` | Pull hiking route GeoJSON from OpenStreetMap into `public/trails/` |
 | `npm run db:generate` | Regenerate Prisma client |
 
 ## API
@@ -51,5 +52,7 @@ If the schema changed and migrations conflict: `docker compose down -v`, then `u
 - `PATCH` / `DELETE /api/saved-trails/:id` — update visibility (private/public) or remove
 - `GET` / `PUT /api/trails/:id/reviews` — list public reviews + your review; create/update ratings (1–5) and notes
 - `DELETE /api/reviews/:id` — delete your review
+- `GET /api/users/:username` — public profile (reviews, saves, trails reviewed)
+- `/users/:username` — profile page (public activity; owner sees private items too)
 - `POST /api/auth/register` — create account (`email`, `username`, `password`)
 - NextAuth routes under `/api/auth/*` (sign in, sign out, session)

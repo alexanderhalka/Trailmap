@@ -97,8 +97,8 @@ function SavedTrailsList() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-xs text-zinc-600">
-        Private saves are only visible to you. Public saves can be shown to other signed-in users
-        later on profiles; for now only you see this list.
+        Private saves are only visible on your profile to you. Public saves appear on your user
+        page for others.
       </p>
       {saved.map((row) => (
         <article

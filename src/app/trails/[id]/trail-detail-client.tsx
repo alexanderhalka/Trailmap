@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { formatRouteType } from "@/lib/route-label";
 import { formatTrailAccessModes } from "@/lib/trail-access";
 import { TrailReviewsSection } from "@/components/trail-reviews-section";
+import { TrailRouteMap } from "@/components/trail-route-map";
 import { estimateTripHours } from "@/lib/trip-estimate";
 import type { AccessMode, Trail } from "@/lib/types";
 
@@ -131,6 +132,8 @@ export function TrailDetailClient({
           {trail.distanceKm} km · {trail.elevationGainM} m gain · {formatRouteType(trail.routeType)}
         </p>
       </header>
+
+      <TrailRouteMap trail={trail} getDetailHref={() => `/trails/${trail.id}`} />
 
       <section className="rounded-xl border border-zinc-200 bg-white p-4 text-zinc-900">
         <h2 className="font-semibold text-zinc-950">Difficulty profile</h2>

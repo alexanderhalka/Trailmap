@@ -30,6 +30,10 @@ export interface Trail {
   accessTransit: boolean;
   accessCar: boolean;
   transitNotes?: string;
+  route?: {
+    type: "LineString";
+    coordinates: [number, number][];
+  };
 }
 
 export type Visibility = "PRIVATE" | "PUBLIC";
@@ -69,4 +73,29 @@ export interface TrailReview {
 export interface TrailReviewsPayload {
   publicReviews: TrailReview[];
   myReview: TrailReview | null;
+}
+
+export interface TrailSummary {
+  id: string;
+  name: string;
+  distanceKm: number;
+  elevationGainM: number;
+  physicalScore?: number;
+  technicalScore?: number;
+  exposureScore?: number;
+}
+
+export interface TrailReviewWithTrail extends TrailReview {
+  trail: TrailSummary;
+}
+
+export interface UserProfile {
+  username: string;
+  memberSince: string;
+  isOwner: boolean;
+  trailsDone: Pick<TrailSummary, "id" | "name" | "distanceKm" | "elevationGainM">[];
+  reviews: TrailReviewWithTrail[];
+  savedTrails: SavedTrail[];
+  privateReviewCount?: number;
+  privateSavedCount?: number;
 }

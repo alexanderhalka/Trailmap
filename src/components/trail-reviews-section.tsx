@@ -254,7 +254,12 @@ export function TrailReviewsSection({ trailId, isLoggedIn }: TrailReviewsSection
           <h3 className="text-sm font-semibold text-zinc-950">Public reviews</h3>
           {publicReviews.map((review) => (
             <article key={review.id} className="rounded-lg border border-zinc-100 p-3">
-              <p className="text-sm font-semibold text-zinc-950">{review.username}</p>
+              <Link
+                href={`/users/${encodeURIComponent(review.username)}`}
+                className="text-sm font-semibold text-zinc-950 hover:underline"
+              >
+                {review.username}
+              </Link>
               <ReviewRatingsDisplay review={review} />
               {review.body ? <p className="mt-2 text-sm text-zinc-800">{review.body}</p> : null}
             </article>
